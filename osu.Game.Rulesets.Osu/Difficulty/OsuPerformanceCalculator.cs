@@ -199,7 +199,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 
             double aimValue = OsuStrainSkill.DifficultyToPerformance(aimDifficulty);
 
-            double lengthBonus = 0.95 + 0.35 * Math.Min(1.0, totalHits / 2000.0) +
+            double lengthBonus = 0.95 + 0.2 * Math.Min(1.0, totalHits / 2000.0) +
                                  (totalHits > 2000 ? Math.Log10(totalHits / 2000.0) * 0.5 : 0.0);
             aimValue *= lengthBonus;
 
@@ -227,45 +227,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 
         private double computeSpeedValue(ScoreInfo score, OsuDifficultyAttributes attributes)
         {
-            if (score.Mods.Any(h => h is OsuModRelax) || speedDeviation == null)
-                return 0.0;
-
-            double speedValue = HarmonicSkill.DifficultyToPerformance(attributes.SpeedDifficulty);
-
-            if (effectiveMissCount > 0)
-            {
-                speedEstimatedSliderBreaks = calculateEstimatedSliderBreaks(attributes.SpeedTopWeightedSliderFactor, attributes);
-
-                double relevantMissCount = Math.Min(effectiveMissCount + speedEstimatedSliderBreaks, totalImperfectHits + countSliderTickMiss);
-
-                speedValue *= calculateMissPenalty(relevantMissCount, attributes.SpeedDifficultStrainCount);
-            }
-
-            // TC bonuses are excluded when blinds is present as the increased visual difficulty is unimportant when notes cannot be seen.
-            if (score.Mods.Any(m => m is OsuModBlinds))
-            {
-                // Increasing the speed value by object count for Blinds isn't ideal, so the minimum buff is given.
-                speedValue *= 1.12;
-            }
-            else if (score.Mods.Any(m => m is OsuModTraceable))
-            {
-                speedValue *= 1.0 + calculateTraceableBonus();
-            }
-
-            double speedHighDeviationMultiplier = calculateSpeedHighDeviationNerf(attributes);
-            speedValue *= speedHighDeviationMultiplier;
-
-            // An effective hit window is created based on the speed SR. The higher the speed difficulty, the shorter the hit window.
-            // For example, a speed SR of 4.0 leads to an effective hit window of 20ms, which is OD 10.
-            double effectiveHitWindow = 20 * Math.Pow(4 / attributes.SpeedDifficulty, 0.35);
-
-            // Find the proportion of 300s on speed notes assuming the hit window was the effective hit window.
-            double effectiveAccuracy = DifficultyCalculationUtils.Erf(effectiveHitWindow / (double)speedDeviation);
-
-            // Scale speed value by normalized accuracy.
-            speedValue *= Math.Pow(effectiveAccuracy, 2);
-
-            return speedValue;
+            return 0.0;
         }
 
         private double computeAccuracyValue(ScoreInfo score, OsuDifficultyAttributes attributes)
@@ -394,19 +356,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 
         private double calculateEstimatedSliderBreaks(double topWeightedSliderFactor, OsuDifficultyAttributes attributes)
         {
-            if (!usingClassicSliderAccuracy || countOk == 0)
-                return 0;
-
-            double missedComboPercent = 1.0 - (double)scoreMaxCombo / attributes.MaxCombo;
-            double estimatedSliderBreaks = Math.Min(countOk, effectiveMissCount * topWeightedSliderFactor);
-
-            // Scores with more Oks are more likely to have slider breaks.
-            double okAdjustment = ((countOk - estimatedSliderBreaks) + 0.5) / countOk;
-
-            // There is a low probability of extra slider breaks on effective miss counts close to 1, as score based calculations are good at indicating if only a single break occurred.
-            estimatedSliderBreaks *= DifficultyCalculationUtils.Smoothstep(effectiveMissCount, 1, 2);
-
-            return estimatedSliderBreaks * okAdjustment * DifficultyCalculationUtils.Logistic(missedComboPercent, 0.33, 15);
+            return 0;
         }
 
         /// <summary>
