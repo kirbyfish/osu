@@ -66,7 +66,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
                 difficulty *= 1.0 - magnetisedStrength;
             }
 
-            if (Mods.Any(m => m is OsuModRelax))
+            // if (Mods.Any(m => m is OsuModRelax))
                 difficulty *= 0.4;
 
             if (Mods.Any(m => m is OsuModAutopilot))
